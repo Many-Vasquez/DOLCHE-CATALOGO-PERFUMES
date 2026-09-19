@@ -3,7 +3,7 @@ import streamlit as st
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="Dolchē - Perfumería Fina & Exclusiva", page_icon="✨", layout="wide")
 
-# --- ESTILOS CSS PERSONALIZADOS (Boutique de Lujo con soporte para imágenes) ---
+# --- ESTILOS CSS PERSONALIZADOS ---
 st.markdown("""
     <style>
     .stApp {
@@ -44,112 +44,96 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS MAESTRA (Ampliación masiva en Kids y Conjuntos) ---
+# --- BASE DE DATOS MAESTRA (Con campo optimizado para enlace directo del proveedor) ---
 CATALOGO_MAESTRO_GPM = [
     # Sección Dama
-    {"Nombre": "212 Heroes For Her .34oz Mini Edp By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Alien Extra Intense .2oz Edp Mini By Thierry Mugler", "Precio Venta MXN": 574.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Alien Goddess Int .2oz Mini Eau de Parfum By Thierry Mugler", "Precio Venta MXN": 574.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Ariana Grande Cloud 3.4oz Eau de Parfum", "Precio Venta MXN": 1582.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Ariana Grande Thank U Next 3.4oz Eau de Parfum", "Precio Venta MXN": 1582.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1583445013765-46c20c4a6772?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Armani My Way 3.0oz Eau de Parfum", "Precio Venta MXN": 2698.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Billie Eilish Eilish No. 1 3.4oz Eau de Parfum", "Precio Venta MXN": 1942.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Burberry Goddess 3.3oz Eau de Parfum", "Precio Venta MXN": 2338.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Carolina Herrera Good Girl Legere 2.7oz", "Precio Venta MXN": 2698.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Carolina Herrera Very Good Girl 2.7oz Edp", "Precio Venta MXN": 2698.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Chanel Coco Mademoiselle 3.4oz Eau de Parfum", "Precio Venta MXN": 3598.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Club de Nuit Woman 3.6oz Eau de Parfum By Armaf", "Precio Venta MXN": 1150.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Dior J'adore 3.4oz Eau de Parfum", "Precio Venta MXN": 3238.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Dolce & Gabbana Light Blue 3.3oz Edt", "Precio Venta MXN": 1978.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Good Girl .24oz Mini Edp By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Good Girl Blush .24oz Mini Edp By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Good Girl Supreme .24oz Mini Edp By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1583445013765-46c20c4a6772?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Gucci Bloom 3.3oz Eau de Parfum", "Precio Venta MXN": 2518.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Gucci Flora Gorgeous Orchid 3.3oz Eau de Parfum", "Precio Venta MXN": 2482.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Jean Paul Gaultier La Belle Rosea .2oz Mini edp for Women", "Precio Venta MXN": 574.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Jean Paul Gaultier Scandal 2.7oz Edp", "Precio Venta MXN": 2518.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Lancome Idole 3.4oz Eau de Parfum", "Precio Venta MXN": 2698.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Lancome La Vie Est Belle 3.4oz Eau de Parfum", "Precio Venta MXN": 2878.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Lattafa Yara 3.4oz Eau de Parfum", "Precio Venta MXN": 934.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Lattafa Yara Moi 3.4oz Eau de Parfum", "Precio Venta MXN": 934.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Lattafa Yara Tous 3.4oz Eau de Parfum", "Precio Venta MXN": 934.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Marc Jacobs Daisy 3.4oz Eau de Toilette", "Precio Venta MXN": 2158.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Marc Jacobs Daisy Eau So Fresh 4.2oz Edt", "Precio Venta MXN": 2338.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Mugler Angel 1.7oz Eau de Parfum", "Precio Venta MXN": 2518.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Narciso Rodriguez For Her 3.3oz Edt", "Precio Venta MXN": 2338.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1583445013765-46c20c4a6772?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Orientica Royal Amber 2.7oz Eau de Parfum", "Precio Venta MXN": 1798.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Prada Paradoxe 3.3oz Eau de Parfum", "Precio Venta MXN": 2698.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Prada Paradoxe Intense .23oz Mini Eau de Parfum", "Precio Venta MXN": 934.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Sol de Janeiro Cheirosa 62 8.1oz Mist", "Precio Venta MXN": 934.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Sol de Janeiro Cheirosa 68 8.1oz Mist", "Precio Venta MXN": 934.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Valentino Born In Roma Donna 3.4oz Edp", "Precio Venta MXN": 2878.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Versace Bright Crystal 3.0oz Eau de Toilette", "Precio Venta MXN": 1798.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Very Good Girl .24oz Mini Edp By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Viktor & Rolf Flowerbomb 3.4oz Eau de Parfum", "Precio Venta MXN": 3058.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Yves Saint Laurent Libre 3.0oz Eau de Parfum", "Precio Venta MXN": 2988.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
-
+    {
+        "Nombre": "212 Heroes For Her .34oz Mini Edp By Carolina Herrera", 
+        "Precio Venta MXN": 826.20, 
+        "Seccion": "Dama", 
+        "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"
+    },
+    {
+        "Nombre": "Alien Extra Intense .2oz Edp Mini By Thierry Mugler", 
+        "Precio Venta MXN": 574.20, 
+        "Seccion": "Dama", 
+        "Imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80"
+    },
+    {
+        "Nombre": "Ariana Grande Cloud 3.4oz Eau de Parfum", 
+        "Precio Venta MXN": 1582.20, 
+        "Seccion": "Dama", 
+        "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"
+    },
+    {
+        "Nombre": "Carolina Herrera Very Good Girl 2.7oz Edp", 
+        "Precio Venta MXN": 2698.20, 
+        "Seccion": "Dama", 
+        "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"
+    },
+    
     # Sección Caballero
-    {"Nombre": "212 Men .34oz Mini Edt By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Acqua Di Gio Giorgio Armani 4.2oz Edt", "Precio Venta MXN": 2338.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Acqua Di Gio Parfum 2.5oz Parfum By Giorgio Armani", "Precio Venta MXN": 2338.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Asad 3.4oz Eau de Parfum By Lattafa", "Precio Venta MXN": 934.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Azzaro Most Wanted Parfum 3.4oz", "Precio Venta MXN": 2698.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Bad Boy .27oz Mini Edt By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Bad Boy Cobalt .27oz Mini Edp By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Bleu de Chanel 3.4oz Eau de Toilette", "Precio Venta MXN": 2988.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Bleu de Chanel 3.4oz Eau de Parfum", "Precio Venta MXN": 3598.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Club de Nuit Intense Man 3.6oz Edp By Armaf", "Precio Venta MXN": 1258.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Dior Sauvage 3.4oz Eau de Toilette", "Precio Venta MXN": 2878.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1583445013765-46c20c4a6772?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Dior Sauvage Elixir 2.0oz", "Precio Venta MXN": 3958.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Dolce & Gabbana The One For Men 3.3oz Edt", "Precio Venta MXN": 1978.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Eros Energy 3.4oz Eau de Parfum By Versace", "Precio Venta MXN": 2338.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Eros Flame 3.4oz Eau de Parfum By Versace", "Precio Venta MXN": 2158.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Hermes Terre D'Hermes 3.4oz Edt", "Precio Venta MXN": 2518.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Jean Paul Gaultier Le Male Le Parfum 4.2oz", "Precio Venta MXN": 2698.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Khamrah Qahwa 3.4oz Eau de Parfum By Lattafa", "Precio Venta MXN": 1150.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Montblanc Explorer 3.4oz Edp", "Precio Venta MXN": 1438.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Paco Rabanne 1 Million 3.4oz Eau de Toilette", "Precio Venta MXN": 2338.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Paco Rabanne Invictus 3.4oz Eau de Toilette", "Precio Venta MXN": 2338.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Prada Luna Rossa Black 3.4oz Edp", "Precio Venta MXN": 2698.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1583445013765-46c20c4a6772?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Tom Ford Noir Extreme 3.4oz Edp", "Precio Venta MXN": 4138.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Tom Ford Ombre Leather 3.4oz Eau de Parfum", "Precio Venta MXN": 3958.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Valentino Born In Roma Uomo 3.4oz Edt", "Precio Venta MXN": 2878.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Versace Dylan Blue 3.4oz Edt", "Precio Venta MXN": 1798.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Versace Eros 3.4oz Eau de Toilette", "Precio Venta MXN": 1978.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Yves Saint Laurent Y Edp 3.4oz", "Precio Venta MXN": 2878.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
+    {
+        "Nombre": "Acqua Di Gio Giorgio Armani 4.2oz Edt", 
+        "Precio Venta MXN": 2338.20, 
+        "Seccion": "Caballero", 
+        "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"
+    },
+    {
+        "Nombre": "Bleu de Chanel 3.4oz Eau de Parfum", 
+        "Precio Venta MXN": 3598.20, 
+        "Seccion": "Caballero", 
+        "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"
+    },
+    {
+        "Nombre": "Dior Sauvage 3.4oz Eau de Toilette", 
+        "Precio Venta MXN": 2878.20, 
+        "Seccion": "Caballero", 
+        "Imagen": "https://images.unsplash.com/photo-1583445013765-46c20c4a6772?auto=format&fit=crop&w=400&q=80"
+    },
 
-    # Sección Kids (Ampliación con más opciones infantiles)
-    {"Nombre": "Barbie Pink Eau de Toilette for Kids 3.4oz", "Precio Venta MXN": 590.00, "Seccion": "Kids", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Cars Disney Pixar Eau de Toilette for Boys", "Precio Venta MXN": 610.00, "Seccion": "Kids", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Disney Frozen II Eau de Toilette Set for Kids", "Precio Venta MXN": 650.00, "Seccion": "Kids", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Disney Mickey Mouse Eau de Toilette for Kids", "Precio Venta MXN": 620.00, "Seccion": "Kids", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Hello Kitty Classic Eau de Toilette for Girls", "Precio Venta MXN": 630.00, "Seccion": "Kids", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Spider-Man Marvel Eau de Toilette for Kids", "Precio Venta MXN": 640.00, "Seccion": "Kids", "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"},
+    # Sección Kids
+    {
+        "Nombre": "Barbie Pink Eau de Toilette for Kids 3.4oz", 
+        "Precio Venta MXN": 590.00, 
+        "Seccion": "Kids", 
+        "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"
+    },
+    {
+        "Nombre": "Disney Frozen II Eau de Toilette Set for Kids", 
+        "Precio Venta MXN": 650.00, 
+        "Seccion": "Kids", 
+        "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"
+    },
 
-    # Sección Conjuntos / Sets (Ampliación con más cofres de regalo)
-    {"Nombre": "1 Million Gift Set By Paco Rabanne (Edt 3.4oz + Travel Spray)", "Precio Venta MXN": 2698.20, "Seccion": "Conjuntos", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Bleu de Chanel Gift Set (Edp 3.4oz + Deodorant Stick)", "Precio Venta MXN": 3418.20, "Seccion": "Conjuntos", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Eros Gift Set By Versace (Edt 3.4oz + Travel Spray + Pouch)", "Precio Venta MXN": 2518.20, "Seccion": "Conjuntos", "Imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Good Girl Gift Set By Carolina Herrera (Edp 2.7oz + Body Lotion)", "Precio Venta MXN": 2878.20, "Seccion": "Conjuntos", "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "La Vie Est Belle Gift Set By Lancome (Edp + Body Lotion)", "Precio Venta MXN": 3058.20, "Seccion": "Conjuntos", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Libre Gift Set By Yves Saint Laurent (Edp + Mini Travel)", "Precio Venta MXN": 3118.20, "Seccion": "Conjuntos", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Sauvage Gift Set By Dior (Edt 3.4oz + Shower Gel)", "Precio Venta MXN": 3238.20, "Seccion": "Conjuntos", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
-    {"Nombre": "Valentino Born In Roma Gift Set (Edp 3.4oz + Mini)", "Precio Venta MXN": 3318.20, "Seccion": "Conjuntos", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"}
+    # Sección Conjuntos
+    {
+        "Nombre": "1 Million Gift Set By Paco Rabanne (Edt 3.4oz + Travel Spray)", 
+        "Precio Venta MXN": 2698.20, 
+        "Seccion": "Conjuntos", 
+        "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"
+    },
+    {
+        "Nombre": "Sauvage Gift Set By Dior (Edt 3.4oz + Shower Gel)", 
+        "Precio Venta MXN": 3238.20, 
+        "Seccion": "Conjuntos", 
+        "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"
+    }
 ]
 
-# --- FUNCIÓN DE BÚSQUEDA Y MAPEO EXACTO ---
+# --- FUNCIÓN DE FILTRADO ---
 def buscar_por_seccion_y_alfabeto(seccion_buscada, termino=""):
     resultados = [p for p in CATALOGO_MAESTRO_GPM if p['Seccion'].lower() == seccion_buscada.lower()]
     if termino:
         resultados = [p for p in resultados if termino.lower() in p['Nombre'].lower()]
     return sorted(resultados, key=lambda x: x['Nombre'])
 
-# --- ENCABEZADO DE LA APP ---
+# --- ENCABEZADO ---
 st.title("✨ Dolchē — Perfumería Fina & Exclusiva")
 st.markdown("<p class='brand-subtitle'>Catálogo oficial sincronizado con galería visual</p>", unsafe_allow_html=True)
 st.divider()
 
-# --- SEPARACIÓN DE PESTAÑAS ---
+# --- PESTAÑAS ---
 cat_dama = buscar_por_seccion_y_alfabeto("Dama")
 cat_caballero = buscar_por_seccion_y_alfabeto("Caballero")
 cat_kids = buscar_por_seccion_y_alfabeto("Kids")
@@ -164,7 +148,6 @@ tab_dama, tab_caballero, tab_kids, tab_conjuntos = st.tabs([
 
 def renderizar_pestana(seccion_nombre, tab_key):
     busqueda = st.text_input(f"🔍 Búsqueda rápida en {seccion_nombre}:", placeholder="Escribe el nombre del perfume...", key=f"search_{tab_key}")
-    
     filtrados = buscar_por_seccion_y_alfabeto(seccion_nombre, busqueda)
 
     st.markdown(f"<p style='color: #7a6e65;'>Mostrando <b>{len(filtrados)}</b> artículos ordenados alfabéticamente</p>", unsafe_allow_html=True)
