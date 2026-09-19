@@ -34,12 +34,12 @@ st.markdown("""
         background-color: #ffffff;
         border-radius: 12px;
         border: 1px solid #eae2d6 !important;
-        box-shadow: 0 6px 20px rgba(43,34,30,0.04);
-        padding: 15px;
+        box-shadow: 0 4px 15px rgba(43,34,30,0.04);
+        padding: 20px;
     }
     .price-tag {
         color: #9c7c38;
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         font-weight: 700;
     }
     .brand-subtitle {
@@ -48,13 +48,19 @@ st.markdown("""
         text-transform: uppercase;
         letter-spacing: 1px;
     }
+    .perfume-title {
+        color: #2b221e;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 URL_PRINCIPAL = "https://gpmcallen.com/"
 
 @st.cache_data(ttl=7200)
-def extraer_catalogo_estricto(tasa_multiplicador=36.0):
+def extraer_nombres_y_precios(tasa_multiplicador=36.0):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     }
@@ -66,9 +72,11 @@ def extraer_catalogo_estricto(tasa_multiplicador=36.0):
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
             
+            # Buscar elementos contenedores de productos
             items = soup.find_all(['div', 'li', 'article'], class_=lambda x: x and any(c in x for c in ['product', 'item', 'grid', 'card', 'col']))
             
             for item in items:
+                # Extraer nombre completo
                 nombre_tag = item.find(['h2', 'h3', 'a', 'span'], class_=lambda x: x and ('title' in x or 'name' in x))
                 if not nombre_tag:
                     nombre_tag = item.find('a')
@@ -77,43 +85,13 @@ def extraer_catalogo_estricto(tasa_multiplicador=36.0):
                 if not nombre or len(nombre) < 3:
                     continue
 
-                # PASO PROHIBIDO: Filtro estricto anti-cremas y anti-cosméticos
+                # Filtro estricto para descartar cremas, geles o cosméticos ajenos a perfumes
                 n_lower = nombre.lower()
                 palabras_prohibidas = ['cream', 'lotion', 'gel', 'makeup', 'body wash', 'lipstick', 'skincare', 'suero', 'bioglow', 'cleaner']
                 if any(p in n_lower for p in palabras_prohibidas):
-                    continue  # Ignoramos todo lo que no sea perfume o fragancia pura
+                    continue
 
-                # Extracción de imagen real
-                img_tag = item.find('img')
-                img_url = ""
-                if img_tag:
-                    for attr in ['src', 'data-src', 'data-lazy-src', 'srcset']:
-                        val = img_tag.get(attr)
-                        if val:
-                            img_url = val.split()[0]
-                            break
-                
-                if img_url:
-                    if img_url.startswith('//'):
-                        img_url = "https:" + img_url
-                    elif img_url.startswith('/'):
-                        img_url = URL_PRINCIPAL.rstrip('/') + img_url
-                
-                if not img_url or 'data:image' in img_url or 'placeholder' in img_url:
-                    if 'jean paul' in n_lower or 'scandal' in n_lower or 'la belle' in n_lower:
-                        img_url = "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=400&fit=crop"
-                    elif 'prada' in n_lower or 'paradoxe' in n_lower:
-                        img_url = "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?w=400&h=400&fit=crop"
-                    elif 'orientica' in n_lower or 'amber' in n_lower:
-                        img_url = "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?w=400&h=400&fit=crop"
-                    elif 'good girl' in n_lower or 'carolina' in n_lower or '212' in n_lower:
-                        img_url = "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=400&h=400&fit=crop"
-                    elif 'chanel' in n_lower or 'alien' in n_lower:
-                        img_url = "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=400&fit=crop"
-                    else:
-                        img_url = "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=400&fit=crop"
-
-                # Precio del proveedor en USD
+                # Extraer precio del proveedor en USD
                 precio_tag = item.find(['span', 'div', 'p'], class_=lambda x: x and ('price' in x or 'amount' in x))
                 precio_proveedor = 0.0
                 
@@ -126,7 +104,7 @@ def extraer_catalogo_estricto(tasa_multiplicador=36.0):
                 if precio_proveedor > 0:
                     precio_final = precio_proveedor * tasa_multiplicador
                     
-                    # Clasificación limpia
+                    # Clasificación inteligente por categorías
                     if 'set' in n_lower or 'conjunto' in n_lower or 'gift' in n_lower or 'coffret' in n_lower:
                         categoria = "Conjunto"
                     elif 'kid' in n_lower or 'child' in n_lower or 'baby' in n_lower or 'niño' in n_lower or 'niña' in n_lower:
@@ -137,7 +115,6 @@ def extraer_catalogo_estricto(tasa_multiplicador=36.0):
                         categoria = "Dama"
 
                     prod_dict = {
-                        "Imagen_URL": img_url,
                         "Nombre": nombre,
                         "Precio Venta MXN": round(precio_final, 2),
                         "Categoria": categoria
@@ -160,15 +137,15 @@ st.markdown("<p class='brand-subtitle'>Catálogo oficial de fragancias importada
 
 col_sup1, _ = st.columns([1, 5])
 with col_sup1:
-    if st.button("🔄 Actualizar"):
+    if st.button("🔄 Actualizar Catálogo"):
         st.cache_data.clear()
         st.rerun()
 
 st.divider()
 
-# --- CARGAR CATÁLOGO ESTRICTO ---
-with st.spinner("Filtrando exclusivamente fragancias de alta gama..."):
-    catalogo = extraer_catalogo_estricto()
+# --- CARGAR BIBLIOTECA DE NOMBRES ---
+with st.spinner("Sincronizando nombres y precios de la biblioteca..."):
+    catalogo = extraer_nombres_y_precios()
 
 if catalogo:
     cat_dama = [p for p in catalogo if p['Categoria'] == 'Dama']
@@ -183,19 +160,19 @@ if catalogo:
         f"🧸 Kids ({len(cat_kids)})"
     ])
 
-    def renderizar_grid(productos_lista, tab_name):
-        busqueda = st.text_input(f"🔍 Buscar en {tab_name}:", placeholder="Escribe el nombre o marca...", key=f"search_{tab_name}")
+    def renderizar_grid_textos(productos_lista, tab_name):
+        busqueda = st.text_input(f"🔍 Buscar en {tab_name}:", placeholder="Escribe el nombre exacto o marca...", key=f"search_{tab_name}")
         
         if busqueda:
             filtrados = [p for p in productos_lista if busqueda.lower() in p['Nombre'].lower()]
         else:
             filtrados = productos_lista
 
-        st.markdown(f"<p style='color: #7a6e65;'>Mostrando <b>{len(filtrados)}</b> fragancias</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color: #7a6e65;'>Mostrando <b>{len(filtrados)}</b> fragancias disponibles</p>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
         if not filtrados:
-            st.info("No hay productos en esta categoría por el momento.")
+            st.info("No hay productos que coincidan con la búsqueda.")
             return
 
         cols_per_row = 3
@@ -206,26 +183,23 @@ if catalogo:
                     prod = filtrados[i + j]
                     with row_cols[j]:
                         with st.container(border=True):
-                            try:
-                                st.image(prod['Imagen_URL'], use_container_width=True)
-                            except:
-                                st.markdown("✨ *(Dolchē Fina)*")
-                            
-                            st.markdown(f"**{prod['Nombre']}**")
+                            st.markdown("✨ **Dolchē Fina**")
+                            st.markdown(f"<div class='perfume-title'>{prod['Nombre']}</div>", unsafe_allow_html=True)
                             st.markdown(f"<span class='price-tag'>${prod['Precio Venta MXN']:,.2f} MXN</span>", unsafe_allow_html=True)
+                            st.markdown("<br>", unsafe_allow_html=True)
                             
-                            if st.button("🛒 Agregar", key=f"add_{tab_name}_{i+j}"):
+                            if st.button("🛒 Agregar al Carrito", key=f"add_{tab_name}_{i+j}"):
                                 st.session_state.carrito.append(prod)
                                 st.toast(f"¡Agregado: {prod['Nombre']}!", icon="✨")
 
     with tab_dama:
-        renderizar_grid(cat_dama, "Dama")
+        renderizar_grid_textos(cat_dama, "Dama")
     with tab_caballero:
-        renderizar_grid(cat_caballero, "Caballero")
+        renderizar_grid_textos(cat_caballero, "Caballero")
     with tab_conjunto:
-        renderizar_grid(cat_conjunto, "Conjunto")
+        renderizar_grid_textos(cat_conjunto, "Conjunto")
     with tab_kids:
-        renderizar_grid(cat_kids, "Kids")
+        renderizar_grid_textos(cat_kids, "Kids")
 
     # --- SECCIÓN DEL CARRITO ---
     st.divider()
@@ -249,7 +223,7 @@ if catalogo:
         
         st.markdown(f"### Total General: ${total_carrito:,.2f} MXN")
         
-        NUMERO_WHATSAPP = "5218448939820"
+        NUMERO_WHATSAPP = "5218448939820"  # Reemplaza con tu número real
         
         mensaje = "Hola Dolchē, quiero solicitar el siguiente pedido:\n\n"
         for item in st.session_state.carrito:
@@ -271,4 +245,4 @@ if catalogo:
             st.session_state.carrito = []
             st.rerun()
 else:
-    st.info("No se pudieron cargar productos en este momento. Intenta dar clic en 'Actualizar'.")
+    st.info("No se pudieron cargar productos en este momento. Intenta dar clic en 'Actualizar Catálogo'.")
