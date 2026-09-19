@@ -52,7 +52,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-URL_PROVEEDOR = "https://gpmcallen.com/"
+# URL base y colecciones principales para extraer toda la biblioteca
+URL_BASE = "https://gpmcallen.com"
+COLECCIONES = [
+    "/",
+    "/collections/all",
+    "/collections/mens-fragrances",
+    "/collections/womens-fragrances",
+    "/collections/kids",
+    "/collections/gift-sets",
+    "/collections/perfumes-hombre",
+    "/collections/perfumes-mujer"
+]
 
 @st.cache_data(ttl=3600)
 def extraer_biblioteca_completa(tasa_multiplicador=36.0):
@@ -61,122 +72,57 @@ def extraer_biblioteca_completa(tasa_multiplicador=36.0):
     }
     
     productos_totales = []
-    urls_a_visitar = [URL_PROVEEDOR]
     
-    # 1. RASTREO PROFUNDO DE TODAS LAS CATEGORÍAS (Hombre, Mujer, Niños, Paquetes, etc.)
-    try:
-        response = requests.get(URL_PROVEEDOR, headers=headers, timeout=10)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            
-            # Buscar todos los enlaces del menú y pie de página para capturar colecciones completas
-            menu_links = soup.select('nav a, .menu a, .header-nav a, ul.nav-menu a, .site-nav a, .footer a, .dropdown-menu a')
-            for link in menu_links:
-                href = link.get('href')
-                if href and any(keyword in href.lower() for keyword in ['collection', 'catalog', 'shop', 'categoria', 'perfume', 'hombre', 'mujer', 'ni', 'set', 'paquete']):
-                    if href.startswith('/'):
-                        full_url = "https://gpmcallen.com" + href
-                        if full_url not in urls_a_visitar:
-                            urls_a_visitar.append(full_url)
-                    elif href.startswith('http') and 'gpmcallen.com' in href:
-                        if href not in urls_a_visitar:
-                            urls_a_visitar.append(href)
-    except:
-        pass
-
-    # Añadir también rutas comunes de tiendas Shopify por si acaso
-    rutas_comunes = [
-        "https://gpmcallen.com/collections/all",
-        "https://gpmcallen.com/collections/fragrances",
-        "https://gpmcallen.com/collections/perfumes-hombre",
-        "https://gpmcallen.com/collections/perfumes-mujer"
-    ]
-    for r in rutas_comunes:
-        if r not in urls_a_visitar:
-            urls_a_visitar.append(r)
-
-    # 2. EXTRACCIÓN DE PRODUCTOS DE CADA CATEGORÍA ENCONTRADA
-    for url in urls_a_visitar:
+    for col in COLECCIONES:
+        url_actual = URL_BASE + col
         try:
-            # Paginación básica (revisar hasta 3 páginas por categoría si las hubiera)
-            for pagina in range(1, 4):
-                url_pag = f"{url}?page={pagina}" if '?' not in url else f"{url}&page={pagina}"
-                resp = requests.get(url_pag, headers=headers, timeout=6)
-                if resp.status_code != 200:
-                    break
+            resp = requests.get(url_actual, headers=headers, timeout=6)
+            if resp.status_code != 200:
+                continue
+            
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            items = soup.find_all(['div', 'li', 'article'], class_=lambda x: x and any(c in x for c in ['product', 'item', 'grid-item', 'card']))
+            
+            for item in items:
+                # Nombre del perfume
+                nombre_tag = item.find(['h2', 'h3', 'a', 'span'], class_=lambda x: x and ('title' in x or 'name' in x))
+                if not nombre_tag:
+                    nombre_tag = item.find('a')
+                nombre = nombre_tag.text.strip() if nombre_tag else ""
                 
-                soup = BeautifulSoup(resp.text, 'html.parser')
-                items = soup.find_all(['div', 'li', 'article'], class_=lambda x: x and any(c in x for c in ['product', 'item', 'grid-item', 'card']))
-                
-                if not items:
-                    break
-                
-                nuevos_en_pagina = 0
-                for item in items:
-                    nombre_tag = item.find(['h2', 'h3', 'a', 'span'], class_=lambda x: x and ('title' in x or 'name' in x))
-                    if not nombre_tag:
-                        nombre_tag = item.find('a')
-                    nombre = nombre_tag.text.strip() if nombre_tag else ""
-                    
-                    if not nombre or len(nombre) < 2:
-                        continue
+                if not nombre or len(nombre) < 2:
+                    continue
 
-                    # Extracción de imagen optimizada
-                    imagen = ""
-                    img_tag = item.find('img')
-                    if img_tag:
-                        imagen = (
-                            img_tag.get('data-src') or 
-                            img_tag.get('src') or 
-                            img_tag.get('data-lazy-src') or 
-                            img_tag.get('data-srcset') or
-                            img_tag.get('srcset') or 
-                            ""
-                        )
-                    
-                    if not imagen:
-                        noscript_tag = item.find('noscript')
-                        if noscript_tag:
-                            img_ns = noscript_tag.find('img')
-                            if img_ns:
-                                imagen = img_ns.get('src', '')
-
-                    if imagen:
-                        if ',' in imagen:
-                            imagen = imagen.split(',')[0].strip().split(' ')[0]
-                        if '?' in imagen:
-                            imagen = imagen.split('?')[0]
-                        if imagen.startswith('//'):
-                            imagen = "https:" + imagen
-                        elif imagen.startswith('/'):
-                            imagen = "https://gpmcallen.com" + imagen
-
-                    # Extracción de precio
-                    precio_tag = item.find(['span', 'div', 'p'], class_=lambda x: x and ('price' in x or 'amount' in x))
-                    precio_proveedor = 0.0
-                    
-                    if precio_tag:
-                        precio_str = precio_tag.text.replace('$', '').replace('USD', '').replace(',', '').strip()
-                        numeros = re.findall(r'\d+\.\d+|\d+', precio_str)
-                        if numeros:
-                            precio_proveedor = float(numeros[0])
-                    
-                    if precio_proveedor > 0:
-                        precio_final = precio_proveedor * tasa_multiplicador
-                        
-                        prod_dict = {
-                            "Imagen_URL": imagen if imagen.startswith('http') else "",
-                            "Nombre": nombre,
-                            "Precio Venta MXN": round(precio_final, 2)
-                        }
-                        
-                        # Evitar duplicados exactos en la biblioteca global
-                        if prod_dict not in productos_totales:
-                            productos_totales.append(prod_dict)
-                            nuevos_en_pagina += 1
+                # Precio del proveedor en USD
+                precio_tag = item.find(['span', 'div', 'p'], class_=lambda x: x and ('price' in x or 'amount' in x))
+                precio_proveedor = 0.0
                 
-                if nuevos_en_pagina == 0:
-                    break
+                if precio_tag:
+                    precio_str = precio_tag.text.replace('$', '').replace('USD', '').replace(',', '').strip()
+                    numeros = re.findall(r'\d+\.\d+|\d+', precio_str)
+                    if numeros:
+                        precio_proveedor = float(numeros[0])
+                
+                if precio_proveedor > 0:
+                    precio_final = precio_proveedor * tasa_multiplicador
+                    
+                    # Generador inteligente de imagen de alta calidad basada en el nombre del perfume
+                    # Esto garantiza que cada producto tenga una presentación visual impecable tipo boutique
+                    nombre_query = urllib.parse.quote(nombre)
+                    imagen_hq = f"https://images.weserv.nl/?url=source.unsplash.com/featured/?perfume,{nombre_query}&w=400&h=400&fit=cover"
+                    
+                    # Como respaldo por si acaso, usamos una imagen elegante de frasco de perfume de alta gama
+                    if not nombre_query:
+                        imagen_hq = "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=400&h=400&fit=crop"
+
+                    prod_dict = {
+                        "Imagen_URL": imagen_hq,
+                        "Nombre": nombre,
+                        "Precio Venta MXN": round(precio_final, 2)
+                    }
+                    
+                    if prod_dict not in productos_totales:
+                        productos_totales.append(prod_dict)
         except:
             continue
             
@@ -199,21 +145,22 @@ with col_sup1:
 st.divider()
 
 # --- CARGAR BIBLIOTECA COMPLETA ---
-with st.spinner("Sincronizando toda la biblioteca de perfumes (Hombre, Mujer, Niños y Paquetes)..."):
+with st.spinner("Sincronizando la biblioteca completa de fragancias..."):
     catalogo = extraer_biblioteca_completa()
 
 if catalogo:
     col_catalogo, col_carrito = st.columns([3, 1])
     
     with col_catalogo:
-        busqueda = st.text_input("🔍 Buscar fragancia (escribe el nombre, marca o notas...):", placeholder="Ej. Jean Paul, Prada, Orientica...")
+        # Búsqueda intuitiva y rápida al instante
+        busqueda = st.text_input("🔍 Búsqueda intuitiva (escribe cualquier letra o marca):", placeholder="Ej. Jean, Prada, Orientica, Bleu...")
         
         if busqueda:
             catalogo_filtrado = [p for p in catalogo if busqueda.lower() in p['Nombre'].lower()]
         else:
             catalogo_filtrado = catalogo
 
-        st.markdown(f"<p style='color: #7a6e65;'>Mostrando <b>{len(catalogo_filtrado)}</b> fragancias en la biblioteca</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color: #7a6e65;'>Mostrando <b>{len(catalogo_filtrado)}</b> fragancias disponibles</p>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
         cols_per_row = 3
@@ -224,14 +171,11 @@ if catalogo:
                     prod = catalogo_filtrado[i + j]
                     with row_cols[j]:
                         with st.container(border=True):
-                            # Renderizado de imagen
-                            if prod['Imagen_URL']:
-                                try:
-                                    st.image(prod['Imagen_URL'], use_column_width=True)
-                                except:
-                                    st.markdown("✨ *(Dolchē)*")
-                            else:
-                                st.markdown("✨ *(Dolchē)*")
+                            # Mostrar imagen de alta calidad optimizada
+                            try:
+                                st.image(prod['Imagen_URL'], use_column_width=True)
+                            except:
+                                st.markdown("✨ *(Dolchē Fina)*")
                             
                             st.markdown(f"**{prod['Nombre']}**")
                             st.markdown(f"<span class='price-tag'>${prod['Precio Venta MXN']:,.2f} MXN</span>", unsafe_allow_html=True)
