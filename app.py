@@ -51,11 +51,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# URL principal del proveedor
 URL_PRINCIPAL = "https://gpmcallen.com/"
 
 @st.cache_data(ttl=7200)
-def extraer_catalogo_pro(tasa_multiplicador=36.0):
+def extraer_catalogo_blindado(tasa_multiplicador=36.0):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     }
@@ -67,10 +66,8 @@ def extraer_catalogo_pro(tasa_multiplicador=36.0):
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # Pasos prohibidos: Extracción avanzada de contenedores de productos
-            items = soup.find_all(['div', 'li', 'article'], class_=lambda x: x and any(c in x for c in ['product', 'item', 'grid-item', 'card', 'grid-product']))
-            if not items:
-                items = soup.find_all('div', class_=lambda x: x and 'col' in x)
+            # Selector general de elementos de productos en plataformas de eCommerce
+            items = soup.find_all(['div', 'li', 'article'], class_=lambda x: x and any(c in x for c in ['product', 'item', 'grid', 'card', 'col']))
             
             for item in items:
                 # Nombre del perfume
@@ -82,19 +79,37 @@ def extraer_catalogo_pro(tasa_multiplicador=36.0):
                 if not nombre or len(nombre) < 3:
                     continue
 
-                # Extracción directa de la imagen real desde el proveedor
+                # Intentar extraer la imagen directa de la etiqueta HTML
                 img_tag = item.find('img')
                 img_url = ""
                 if img_tag:
-                    img_url = img_tag.get('src') or img_tag.get('data-src') or img_tag.get('srcset', '').split()[0]
+                    for attr in ['src', 'data-src', 'data-lazy-src', 'srcset']:
+                        val = img_tag.get(attr)
+                        if val:
+                            img_url = val.split()[0] # Tomar la primera URL si es srcset
+                            break
                 
                 if img_url:
                     if img_url.startswith('//'):
                         img_url = "https:" + img_url
                     elif img_url.startswith('/'):
                         img_url = URL_PRINCIPAL.rstrip('/') + img_url
-                else:
-                    img_url = "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=400&fit=crop"
+                
+                # Si el sistema bloqueó la imagen directa, asignamos una miniatura estética de alta gama según la marca
+                if not img_url or 'data:image' in img_url or 'placeholder' in img_url:
+                    n_lower = nombre.lower()
+                    if 'jean paul' in n_lower or 'scandal' in n_lower:
+                        img_url = "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=400&fit=crop"
+                    elif 'prada' in n_lower:
+                        img_url = "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?w=400&h=400&fit=crop"
+                    elif 'orientica' in n_lower or 'amber' in n_lower:
+                        img_url = "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?w=400&h=400&fit=crop"
+                    elif 'good girl' in n_lower or 'carolina' in n_lower:
+                        img_url = "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=400&h=400&fit=crop"
+                    elif 'chanel' in n_lower:
+                        img_url = "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=400&fit=crop"
+                    else:
+                        img_url = "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=400&fit=crop"
 
                 # Precio del proveedor en USD
                 precio_tag = item.find(['span', 'div', 'p'], class_=lambda x: x and ('price' in x or 'amount' in x))
@@ -150,18 +165,16 @@ with col_sup1:
 
 st.divider()
 
-# --- CARGAR CATÁLOGO COMPLETO ---
-with st.spinner("Aplicando pasos prohibidos y extrayendo la biblioteca completa..."):
-    catalogo = extraer_catalogo_pro()
+# --- CARGAR CATÁLOGO BLINDADO ---
+with st.spinner("Sincronizando biblioteca y aplicando bypass de imágenes..."):
+    catalogo = extraer_catalogo_blindado()
 
 if catalogo:
-    # Separar en categorías
     cat_dama = [p for p in catalogo if p['Categoria'] == 'Dama']
     cat_caballero = [p for p in catalogo if p['Categoria'] == 'Caballero']
     cat_conjunto = [p for p in catalogo if p['Categoria'] == 'Conjunto']
     cat_kids = [p for p in catalogo if p['Categoria'] == 'Kids']
 
-    # Pestañas principales
     tab_dama, tab_caballero, tab_conjunto, tab_kids = st.tabs([
         f"🌸 Dama ({len(cat_dama)})", 
         f"👔 Caballero ({len(cat_caballero)})", 
@@ -235,7 +248,7 @@ if catalogo:
         
         st.markdown(f"### Total General: ${total_carrito:,.2f} MXN")
         
-        NUMERO_WHATSAPP = "5218448939820"  # Reemplaza con tu número de WhatsApp
+        NUMERO_WHATSAPP = "5218448939820"  # Reemplaza con tu número real
         
         mensaje = "Hola Dolchē, quiero solicitar el siguiente pedido:\n\n"
         for item in st.session_state.carrito:
