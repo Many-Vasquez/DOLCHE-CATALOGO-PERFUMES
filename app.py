@@ -41,8 +41,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS MAESTRA DE PERFUMES Y PRECIOS MXN ---
-# (Sincronizada con el catálogo oficial y multiplicador de la tienda)
+# --- BASE DE DATOS MAESTRA AMPLIADA (Mapeo Completo) ---
 CATALOGO_OFICIAL = [
     # Dama
     {"Nombre": "Orientica Royal Amber 2.7oz Eau de Parfum", "Precio Venta MXN": 1798.20, "Categoria": "Dama"},
@@ -61,6 +60,17 @@ CATALOGO_OFICIAL = [
     {"Nombre": "Lattafa Yara Tous 3.4oz Eau de Parfum", "Precio Venta MXN": 934.20, "Categoria": "Dama"},
     {"Nombre": "Lattafa Yara Moi 3.4oz Eau de Parfum", "Precio Venta MXN": 934.20, "Categoria": "Dama"},
     {"Nombre": "Club de Nuit Woman 3.6oz Eau de Parfum By Armaf", "Precio Venta MXN": 1150.20, "Categoria": "Dama"},
+    {"Nombre": "Ariana Grande Cloud 3.4oz Eau de Parfum", "Precio Venta MXN": 1582.20, "Categoria": "Dama"},
+    {"Nombre": "Ariana Grande Thank U Next 3.4oz Eau de Parfum", "Precio Venta MXN": 1582.20, "Categoria": "Dama"},
+    {"Nombre": "Billie Eilish Eilish No. 1 3.4oz Eau de Parfum", "Precio Venta MXN": 1942.20, "Categoria": "Dama"},
+    {"Nombre": "Chanel Coco Mademoiselle 3.4oz Eau de Parfum", "Precio Venta MXN": 3598.20, "Categoria": "Dama"},
+    {"Nombre": "Lancome La Vie Est Belle 3.4oz Eau de Parfum", "Precio Venta MXN": 2878.20, "Categoria": "Dama"},
+    {"Nombre": "Yves Saint Laurent Libre 3.0oz Eau de Parfum", "Precio Venta MXN": 2988.20, "Categoria": "Dama"},
+    {"Nombre": "Dior J'adore 3.4oz Eau de Parfum", "Precio Venta MXN": 3238.20, "Categoria": "Dama"},
+    {"Nombre": "Carolina Herrera Herrera Good Girl Legere 2.7oz", "Precio Venta MXN": 2698.20, "Categoria": "Dama"},
+    {"Nombre": "Marc Jacobs Daisy 3.4oz Eau de Toilette", "Precio Venta MXN": 2158.20, "Categoria": "Dama"},
+    {"Nombre": "Versace Bright Crystal 3.0oz Eau de Toilette", "Precio Venta MXN": 1798.20, "Categoria": "Dama"},
+    {"Nombre": "Dolce & Gabbana Light Blue 3.3oz Edt", "Precio Venta MXN": 1978.20, "Categoria": "Dama"},
     
     # Caballero
     {"Nombre": "Acqua Di Gio Parfum 2.5oz Parfum By Giorgio Armani", "Precio Venta MXN": 2338.20, "Categoria": "Caballero"},
@@ -72,16 +82,29 @@ CATALOGO_OFICIAL = [
     {"Nombre": "Asad 3.4oz Eau de Parfum By Lattafa", "Precio Venta MXN": 934.20, "Categoria": "Caballero"},
     {"Nombre": "Khamrah Qahwa 3.4oz Eau de Parfum By Lattafa", "Precio Venta MXN": 1150.20, "Categoria": "Caballero"},
     {"Nombre": "Club de Nuit Intense Man 3.6oz Edp By Armaf", "Precio Venta MXN": 1258.20, "Categoria": "Caballero"},
+    {"Nombre": "Bleu de Chanel 3.4oz Eau de Parfum", "Precio Venta MXN": 3598.20, "Categoria": "Caballero"},
+    {"Nombre": "Dior Sauvage 3.4oz Eau de Toilette", "Precio Venta MXN": 2878.20, "Categoria": "Caballero"},
+    {"Nombre": "Dior Sauvage Elixir 2.0oz", "Precio Venta MXN": 3958.20, "Categoria": "Caballero"},
+    {"Nombre": "Versace Eros 3.4oz Eau de Toilette", "Precio Venta MXN": 1978.20, "Categoria": "Caballero"},
+    {"Nombre": "Paco Rabanne 1 Million 3.4oz Eau de Toilette", "Precio Venta MXN": 2338.20, "Categoria": "Caballero"},
+    {"Nombre": "Paco Rabanne Invictus 3.4oz Eau de Toilette", "Precio Venta MXN": 2338.20, "Categoria": "Caballero"},
+    {"Nombre": "Jean Paul Gaultier Le Male Le Parfum 4.2oz", "Precio Venta MXN": 2698.20, "Categoria": "Caballero"},
+    {"Nombre": "Dolce & Gabbana The One For Men 3.3oz Edt", "Precio Venta MXN": 1978.20, "Categoria": "Caballero"},
+    {"Nombre": "Tom Ford Ombre Leather 3.4oz Eau de Parfum", "Precio Venta MXN": 3958.20, "Categoria": "Caballero"},
 
     # Conjuntos (Sets)
     {"Nombre": "Good Girl Gift Set By Carolina Herrera (Edp 2.7oz + Body Lotion)", "Precio Venta MXN": 2878.20, "Categoria": "Conjuntos"},
     {"Nombre": "Eros Gift Set By Versace (Edt 3.4oz + Travel Spray + Pouch)", "Precio Venta MXN": 2518.20, "Categoria": "Conjuntos"},
     {"Nombre": "Bleu de Chanel Gift Set (Edp 3.4oz + Deodorant Stick)", "Precio Venta MXN": 3418.20, "Categoria": "Conjuntos"},
+    {"Nombre": "Sauvage Gift Set By Dior (Edt 3.4oz + Shower Gel)", "Precio Venta MXN": 3238.20, "Categoria": "Conjuntos"},
+    {"Nombre": "Libre Gift Set By Yves Saint Laurent (Edp + Mini Travel)", "Precio Venta MXN": 3118.20, "Categoria": "Conjuntos"},
 
     # Kids
     {"Nombre": "Disney Frozen II Kids 3.4oz Eau de Toilette", "Precio Venta MXN": 538.20, "Categoria": "Kids"},
     {"Nombre": "Spider-Man Marvel Kids 3.4oz Eau de Toilette", "Precio Venta MXN": 538.20, "Categoria": "Kids"},
-    {"Nombre": "Hello Kitty Sweet Pink 3.4oz Eau de Toilette", "Precio Venta MXN": 538.20, "Categoria": "Kids"}
+    {"Nombre": "Hello Kitty Sweet Pink 3.4oz Eau de Toilette", "Precio Venta MXN": 538.20, "Categoria": "Kids"},
+    {"Nombre": "Minions Kids 3.4oz Eau de Toilette", "Precio Venta MXN": 538.20, "Categoria": "Kids"},
+    {"Nombre": "Barbie Pink Glam Kids 3.4oz Eau de Toilette", "Precio Venta MXN": 538.20, "Categoria": "Kids"}
 ]
 
 # --- ENCABEZADO DE LA APP ---
