@@ -1,9 +1,10 @@
 import streamlit as st
+import re
 
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="Dolchē - Perfumería Fina & Exclusiva", page_icon="✨", layout="wide")
 
-# --- ESTILOS CSS PERSONALIZADOS (Diseño de Listado Limpio y Ejecutivo) ---
+# --- ESTILOS CSS PERSONALIZADOS ---
 st.markdown("""
     <style>
     .stApp {
@@ -22,9 +23,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS MAESTRA (Ampliación masiva lista para seguir creciendo) ---
+# --- BASE DE DATOS MAESTRA AMPLIADA ---
 CATALOGO_MAESTRO_GPM = [
     # Sección Dama
+    {"Nombre": "11 11 Azure 1.7oz Eau de Parfum", "Precio Venta MXN": 1798.20, "Seccion": "Dama"},
     {"Nombre": "212 Heroes For Her .34oz Mini Edp By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Dama"},
     {"Nombre": "Alien Extra Intense .2oz Edp Mini By Thierry Mugler", "Precio Venta MXN": 574.20, "Seccion": "Dama"},
     {"Nombre": "Alien Goddess Int .2oz Mini Eau de Parfum By Thierry Mugler", "Precio Venta MXN": 574.20, "Seccion": "Dama"},
@@ -98,40 +100,54 @@ CATALOGO_MAESTRO_GPM = [
 
     # Sección Kids
     {"Nombre": "Barbie Pink Eau de Toilette for Kids 3.4oz", "Precio Venta MXN": 590.00, "Seccion": "Kids"},
-    {"Nombre": "Cars Disney Pixar Eau de Toilette for Boys", "Precio Venta MXN": 610.00, "Seccion": "Kids"},
-    {"Nombre": "Disney Frozen II Eau de Toilette Set for Kids", "Precio Venta MXN": 650.00, "Seccion": "Kids"},
-    {"Nombre": "Disney Mickey Mouse Eau de Toilette for Kids", "Precio Venta MXN": 620.00, "Seccion": "Kids"},
-    {"Nombre": "Hello Kitty Classic Eau de Toilette for Girls", "Precio Venta MXN": 630.00, "Seccion": "Kids"},
-    {"Nombre": "Spider-Man Marvel Eau de Toilette for Kids", "Precio Venta MXN": 640.00, "Seccion": "Kids"},
+    {"Nombre": "Cars Disney Pixar Eau de Toilette for Boys 3.4oz", "Precio Venta MXN": 610.00, "Seccion": "Kids"},
+    {"Nombre": "Disney Frozen II Eau de Toilette Set for Kids 3.4oz", "Precio Venta MXN": 650.00, "Seccion": "Kids"},
+    {"Nombre": "Disney Mickey Mouse Eau de Toilette for Kids 3.4oz", "Precio Venta MXN": 620.00, "Seccion": "Kids"},
+    {"Nombre": "Hello Kitty Classic Eau de Toilette for Girls 3.4oz", "Precio Venta MXN": 630.00, "Seccion": "Kids"},
+    {"Nombre": "Spider-Man Marvel Eau de Toilette for Kids 3.4oz", "Precio Venta MXN": 640.00, "Seccion": "Kids"},
 
     # Sección Conjuntos / Sets
     {"Nombre": "1 Million Gift Set By Paco Rabanne (Edt 3.4oz + Travel Spray)", "Precio Venta MXN": 2698.20, "Seccion": "Conjuntos"},
     {"Nombre": "Bleu de Chanel Gift Set (Edp 3.4oz + Deodorant Stick)", "Precio Venta MXN": 3418.20, "Seccion": "Conjuntos"},
     {"Nombre": "Eros Gift Set By Versace (Edt 3.4oz + Travel Spray + Pouch)", "Precio Venta MXN": 2518.20, "Seccion": "Conjuntos"},
     {"Nombre": "Good Girl Gift Set By Carolina Herrera (Edp 2.7oz + Body Lotion)", "Precio Venta MXN": 2878.20, "Seccion": "Conjuntos"},
-    {"Nombre": "La Vie Est Belle Gift Set By Lancome (Edp + Body Lotion)", "Precio Venta MXN": 3058.20, "Seccion": "Conjuntos"},
-    {"Nombre": "Libre Gift Set By Yves Saint Laurent (Edp + Mini Travel)", "Precio Venta MXN": 3118.20, "Seccion": "Conjuntos"},
+    {"Nombre": "La Vie Est Belle Gift Set By Lancome (Edp 3.4oz + Body Lotion)", "Precio Venta MXN": 3058.20, "Seccion": "Conjuntos"},
+    {"Nombre": "Libre Gift Set By Yves Saint Laurent (Edp 3.0oz + Mini Travel)", "Precio Venta MXN": 3118.20, "Seccion": "Conjuntos"},
     {"Nombre": "Sauvage Gift Set By Dior (Edt 3.4oz + Shower Gel)", "Precio Venta MXN": 3238.20, "Seccion": "Conjuntos"},
     {"Nombre": "Valentino Born In Roma Gift Set (Edp 3.4oz + Mini)", "Precio Venta MXN": 3318.20, "Seccion": "Conjuntos"}
 ]
 
-# --- FUNCIÓN DE BÚSQUEDA ---
-def buscar_por_seccion_y_alfabeto(seccion_buscada, termino=""):
+# --- FUNCIÓN PARA CONVERTIR ONZAS A ML AUTOMÁTICAMENTE ---
+def extraer_y_convertir_oz(nombre):
+    # Busca patrones como "3.4oz", ".34oz", "8.1 oz", etc.
+    match = re.search(r'([\d.]+)\s*(?:oz|OZ)', nombre)
+    if match:
+        try:
+            onzas = float(match.group(1))
+            ml = onzas * 29.5735  # 1 oz líquida = 29.5735 ml
+            return f"{onzas} oz ({ml:.1f} ml)"
+        except ValueError:
+            pass
+    return "N/D"
+
+# --- FUNCIÓN DE BÚSQUEDA Y ORDENAMIENTO ALFABÉTICO ---
+def buscar_y_ordenar(seccion_buscada, termino=""):
     resultados = [p for p in CATALOGO_MAESTRO_GPM if p['Seccion'].lower() == seccion_buscada.lower()]
     if termino:
         resultados = [p for p in resultados if termino.lower() in p['Nombre'].lower()]
+    # Orden alfabético estricto por nombre
     return sorted(resultados, key=lambda x: x['Nombre'])
 
 # --- ENCABEZADO DE LA APP ---
 st.title("✨ Dolchē — Perfumería Fina & Exclusiva")
-st.markdown("<p class='brand-subtitle'>Catálogo oficial en formato de listado maestro</p>", unsafe_allow_html=True)
+st.markdown("<p class='brand-subtitle'>Catálogo oficial ordenado alfabéticamente con conversión de volumen</p>", unsafe_allow_html=True)
 st.divider()
 
 # --- PESTAÑAS ---
-cat_dama = buscar_por_seccion_y_alfabeto("Dama")
-cat_caballero = buscar_por_seccion_y_alfabeto("Caballero")
-cat_kids = buscar_por_seccion_y_alfabeto("Kids")
-cat_conjuntos = buscar_por_seccion_y_alfabeto("Conjuntos")
+cat_dama = buscar_y_ordenar("Dama")
+cat_caballero = buscar_y_ordenar("Caballero")
+cat_kids = buscar_y_ordenar("Kids")
+cat_conjuntos = buscar_y_ordenar("Conjuntos")
 
 tab_dama, tab_caballero, tab_kids, tab_conjuntos = st.tabs([
     f"🌸 Dama ({len(cat_dama)})", 
@@ -143,7 +159,7 @@ tab_dama, tab_caballero, tab_kids, tab_conjuntos = st.tabs([
 def renderizar_pestana_tabla(seccion_nombre, tab_key):
     busqueda = st.text_input(f"🔍 Búsqueda rápida en {seccion_nombre}:", placeholder="Escribe el nombre del perfume...", key=f"search_{tab_key}")
     
-    filtrados = buscar_por_seccion_y_alfabeto(seccion_nombre, busqueda)
+    filtrados = buscar_y_ordenar(seccion_nombre, busqueda)
 
     st.markdown(f"<p style='color: #7a6e65;'>Mostrando <b>{len(filtrados)}</b> artículos ordenados alfabéticamente</p>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -152,12 +168,12 @@ def renderizar_pestana_tabla(seccion_nombre, tab_key):
         st.info("No se encontraron coincidencias en esta sección.")
         return
 
-    # Preparar datos limpios para la tabla
+    # Preparar datos sin numeración y con la columna de conversión
     datos_tabla = []
-    for idx, prod in enumerate(filtrados, 1):
+    for prod in filtrados:
         datos_tabla.append({
-            "No.": idx,
             "Descripción / Nombre del Perfume": prod['Nombre'],
+            "Contenido (Oz / Ml)": extraer_y_convertir_oz(prod['Nombre']),
             "Precio Venta MXN": f"${prod['Precio Venta MXN']:,.2f} MXN"
         })
 
@@ -166,8 +182,8 @@ def renderizar_pestana_tabla(seccion_nombre, tab_key):
         use_container_width=True, 
         hide_index=True,
         column_config={
-            "No.": st.column_config.NumberColumn(width="small"),
             "Descripción / Nombre del Perfume": st.column_config.TextColumn(width="large"),
+            "Contenido (Oz / Ml)": st.column_config.TextColumn(width="small"),
             "Precio Venta MXN": st.column_config.TextColumn(width="medium")
         }
     )
