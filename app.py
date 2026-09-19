@@ -22,27 +22,55 @@ def extraer_catalogo_dolche(tasa_multiplicador=1.36):
         soup = BeautifulSoup(response.text, 'html.parser')
         productos = []
         
-        items = soup.find_all('div', class_='product-item')
+        # Buscamos contenedores comunes de productos en tiendas online
+        items = soup.find_all(['div', 'li', 'article'], class_=lambda x: x and ('product' in x or 'item' in x or 'grid-item' in x))
         
+        # Si no encuentra con clases específicas, intentamos buscar de forma general
+        if not items:
+            items = soup.find_all('div', class_='product-item')
+
         for item in items:
-            nombre_tag = item.find('h2', class_='product-title')
+            # Buscar el nombre en cualquier etiqueta de encabezado o enlace principal
+            nombre_tag = item.find(['h2', 'h3', 'a', 'span'], class_=lambda x: x and ('title' in x or 'name' in x))
+            if not nombre_tag:
+                nombre_tag = item.find('a') # Plan B: buscar el primer enlace
             nombre = nombre_tag.text.strip() if nombre_tag else "Perfume sin nombre"
             
-            img_tag = item.find('img', class_='product-image')
-            imagen = img_tag['src'] if img_tag and 'src' in img_tag.attrs else ""
+            # Limpiamos textos muy largos o vacíos
+            if len(nombre) < 2:
+                continue
+
+            # Buscar la imagen del producto
+            img_tag = item.find('img')
+            imagen = ""
+            if img_tag:
+                imagen = img_tag.get('src') or img_tag.get('data-src') or ""
+                if imagen.startswith('//'):
+                    imagen = "https:" + imagen
+
+            # Buscar el precio en formato de moneda
+            precio_tag = item.find(['span', 'div', 'p'], class_=lambda x: x and ('price' in x or 'amount' in x))
+            precio_proveedor = 0.0
             
-            precio_tag = item.find('span', class_='price')
             if precio_tag:
-                precio_str = precio_tag.text.replace('$', '').replace(',', '').strip()
-                precio_proveedor = float(precio_str)
+                precio_str = precio_tag.text.replace('$', '').replace('USD', '').replace(',', '').strip()
+                # Extraer solo la parte numérica por si hay texto extra
+                import re
+                numeros = re.findall(r'\d+\.\d+|\d+', precio_str)
+                if numeros:
+                    precio_proveedor = float(numeros[0])
+            
+            if precio_proveedor > 0:
                 precio_final = precio_proveedor * tasa_multiplicador
                 
-                productos.append({
+                # Evitar duplicados exactos
+                prod_dict = {
                     "Nombre": nombre,
-                    "Imagen": imagen,
                     "Costo USD": round(precio_proveedor, 2),
                     "Precio Venta MXN (Tasa 1.36)": round(precio_final, 2)
-                })
+                }
+                if prod_dict not in productos:
+                    productos.append(prod_dict)
                 
         return productos
     except Exception as e:
@@ -66,7 +94,7 @@ if catalogo:
     if busqueda:
         df = df[df['Nombre'].str.contains(busqueda, case=False, na=False)]
     
-    st.success(f"¡Se encontraron {len(df)} productos disponibles!")
+    st.success(f"¡Se encontraron {len(df)} productos con nombres y precios detectados!")
     st.dataframe(df, use_container_width=True, hide_index=True)
 else:
-    st.info("No se pudieron cargar productos automáticamente en este momento o la estructura de la web requiere un ajuste fino de etiquetas.")
+    st.info("No se pudieron cargar productos automáticamente. Asegúrate de que la página del proveedor esté accesible.")
