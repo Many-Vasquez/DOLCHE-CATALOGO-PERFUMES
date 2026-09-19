@@ -8,7 +8,7 @@ st.set_page_config(page_title="Dolchē - Catálogo y Precios", page_icon="🛍�
 
 URL_PROVEEDOR = "https://gpmcallen.com/"
 
-@st.cache_data(ttl=3600) # Guarda en caché por 1 hora para agilizar consultas
+@st.cache_data(ttl=3600)
 def extraer_catalogo_dolche(tasa_multiplicador=1.36):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -62,14 +62,11 @@ with st.spinner("Conectando con el proveedor y calculando precios..."):
 if catalogo:
     df = pd.DataFrame(catalogo)
     
-    # Barra de búsqueda rápida
     busqueda = st.text_input("🔍 Buscar perfume en el catálogo:")
     if busqueda:
         df = df[df['Nombre'].str.contains(busqueda, case=False, na=False)]
     
     st.success(f"¡Se encontraron {len(df)} productos disponibles!")
-    
-    # Mostrar tabla interactiva con formato limpio
     st.dataframe(df, use_container_width=True, hide_index=True)
 else:
-    st.info("No se pudieron cargar productos automáticamente en este momento o la estructura de la web requiere un ajuste fino de etiquetas. Actualiza o verifica la conexión.")
+    st.info("No se pudieron cargar productos automáticamente en este momento o la estructura de la web requiere un ajuste fino de etiquetas.")
