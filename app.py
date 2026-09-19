@@ -41,7 +41,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS MAESTRA (Mapeo exacto por sección y orden alfabético) ---
+# --- BASE DE DATOS MAESTRA (Incluyendo Dama, Caballero, Kids y Sets) ---
 CATALOGO_MAESTRO_GPM = [
     # Sección Dama
     {"Nombre": "212 Heroes For Her .34oz Mini Edp By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Dama"},
@@ -110,6 +110,11 @@ CATALOGO_MAESTRO_GPM = [
     {"Nombre": "Versace Eros 3.4oz Eau de Toilette", "Precio Venta MXN": 1978.20, "Seccion": "Caballero"},
     {"Nombre": "Yves Saint Laurent Y Edp 3.4oz", "Precio Venta MXN": 2878.20, "Seccion": "Caballero"},
 
+    # Sección Kids
+    {"Nombre": "Disney Frozen II Eau de Toilette Set for Kids", "Precio Venta MXN": 650.00, "Seccion": "Kids"},
+    {"Nombre": "Disney Mickey Mouse Eau de Toilette for Kids", "Precio Venta MXN": 620.00, "Seccion": "Kids"},
+    {"Nombre": "Spider-Man Marvel Eau de Toilette for Kids", "Precio Venta MXN": 640.00, "Seccion": "Kids"},
+
     # Sección Conjuntos / Sets
     {"Nombre": "1 Million Gift Set By Paco Rabanne (Edt 3.4oz + Travel Spray)", "Precio Venta MXN": 2698.20, "Seccion": "Conjuntos"},
     {"Nombre": "Bleu de Chanel Gift Set (Edp 3.4oz + Deodorant Stick)", "Precio Venta MXN": 3418.20, "Seccion": "Conjuntos"},
@@ -129,17 +134,19 @@ def buscar_por_seccion_y_alfabeto(seccion_buscada, termino=""):
 
 # --- ENCABEZADO DE LA APP ---
 st.title("✨ Dolchē — Perfumería Fina & Exclusiva")
-st.markdown("<p class='brand-subtitle'>Catálogo oficial sincronizado con estructura GPMCallen</p>", unsafe_allow_html=True)
+st.markdown("<p class='brand-subtitle'>Catálogo oficial sincronizado</p>", unsafe_allow_html=True)
 st.divider()
 
-# --- SEPARACIÓN DE PESTAÑAS ---
+# --- SEPARACIÓN DE PESTAÑAS (Incluyendo Kids) ---
 cat_dama = buscar_por_seccion_y_alfabeto("Dama")
 cat_caballero = buscar_por_seccion_y_alfabeto("Caballero")
+cat_kids = buscar_por_seccion_y_alfabeto("Kids")
 cat_conjuntos = buscar_por_seccion_y_alfabeto("Conjuntos")
 
-tab_dama, tab_caballero, tab_conjuntos = st.tabs([
+tab_dama, tab_caballero, tab_kids, tab_conjuntos = st.tabs([
     f"🌸 Dama ({len(cat_dama)})", 
     f"👔 Caballero ({len(cat_caballero)})", 
+    f"🧸 Kids ({len(cat_kids)})",
     f"🎁 Conjuntos ({len(cat_conjuntos)})"
 ])
 
@@ -171,5 +178,7 @@ with tab_dama:
     renderizar_pestana("Dama", "dama")
 with tab_caballero:
     renderizar_pestana("Caballero", "caballero")
+with tab_kids:
+    renderizar_pestana("Kids", "kids")
 with tab_conjuntos:
     renderizar_pestana("Conjuntos", "conjuntos")
