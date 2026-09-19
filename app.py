@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
-import pandas as pd
 import re
 import urllib.parse
 
@@ -52,35 +51,23 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# URL base y colecciones principales para extraer toda la biblioteca
-URL_BASE = "https://gpmcallen.com"
-COLECCIONES = [
-    "/",
-    "/collections/all",
-    "/collections/mens-fragrances",
-    "/collections/womens-fragrances",
-    "/collections/kids",
-    "/collections/gift-sets",
-    "/collections/perfumes-hombre",
-    "/collections/perfumes-mujer"
-]
+# URL principal del proveedor
+URL_PRINCIPAL = "https://gpmcallen.com/"
 
-@st.cache_data(ttl=3600)
-def extraer_biblioteca_completa(tasa_multiplicador=36.0):
+@st.cache_data(ttl=7200)
+def extraer_catalogo_optimizado(tasa_multiplicador=36.0):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     }
     
-    productos_totales = []
+    productos = []
     
-    for col in COLECCIONES:
-        url_actual = URL_BASE + col
-        try:
-            resp = requests.get(url_actual, headers=headers, timeout=6)
-            if resp.status_code != 200:
-                continue
+    try:
+        response = requests.get(URL_PRINCIPAL, headers=headers, timeout=10)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
             
-            soup = BeautifulSoup(resp.text, 'html.parser')
+            # Buscar todos los elementos de productos en la tienda
             items = soup.find_all(['div', 'li', 'article'], class_=lambda x: x and any(c in x for c in ['product', 'item', 'grid-item', 'card']))
             
             for item in items:
@@ -106,27 +93,31 @@ def extraer_biblioteca_completa(tasa_multiplicador=36.0):
                 if precio_proveedor > 0:
                     precio_final = precio_proveedor * tasa_multiplicador
                     
-                    # Generador inteligente de imagen de alta calidad basada en el nombre del perfume
-                    # Esto garantiza que cada producto tenga una presentación visual impecable tipo boutique
-                    nombre_query = urllib.parse.quote(nombre)
-                    imagen_hq = f"https://images.weserv.nl/?url=source.unsplash.com/featured/?perfume,{nombre_query}&w=400&h=400&fit=cover"
+                    # Imagen estable y de alta calidad garantizada para evitar errores de carga
+                    # Usamos un catálogo visual elegante de frascos de perfume profesionales
+                    imagen_segura = "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=400&fit=crop"
                     
-                    # Como respaldo por si acaso, usamos una imagen elegante de frasco de perfume de alta gama
-                    if not nombre_query:
-                        imagen_hq = "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=400&h=400&fit=crop"
+                    # Si el nombre menciona marcas específicas, adaptamos una foto fina alusiva
+                    n_lower = nombre.lower()
+                    if 'jean paul' in n_lower:
+                        imagen_segura = "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=400&fit=crop"
+                    elif 'prada' in n_lower:
+                        imagen_segura = "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?w=400&h=400&fit=crop"
+                    elif 'orientica' in n_lower or 'amber' in n_lower:
+                        imagen_segura = "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?w=400&h=400&fit=crop"
 
                     prod_dict = {
-                        "Imagen_URL": imagen_hq,
+                        "Imagen_URL": imagen_segura,
                         "Nombre": nombre,
                         "Precio Venta MXN": round(precio_final, 2)
                     }
                     
-                    if prod_dict not in productos_totales:
-                        productos_totales.append(prod_dict)
-        except:
-            continue
-            
-    return productos_totales
+                    if prod_dict not in productos:
+                        productos.append(prod_dict)
+    except:
+        pass
+        
+    return productos
 
 # --- INICIALIZAR CARRITO ---
 if 'carrito' not in st.session_state:
@@ -134,7 +125,7 @@ if 'carrito' not in st.session_state:
 
 # --- ENCABEZADO DE LA APP ---
 st.title("✨ Dolchē — Perfumería Fina & Exclusiva")
-st.markdown("<p class='brand-subtitle'>Biblioteca completa de fragancias importadas de alta gama</p>", unsafe_allow_html=True)
+st.markdown("<p class='brand-subtitle'>Catálogo oficial de fragancias importadas de alta gama</p>", unsafe_allow_html=True)
 
 col_sup1, col_sup2 = st.columns([1, 5])
 with col_sup1:
@@ -144,16 +135,16 @@ with col_sup1:
 
 st.divider()
 
-# --- CARGAR BIBLIOTECA COMPLETA ---
-with st.spinner("Sincronizando la biblioteca completa de fragancias..."):
-    catalogo = extraer_biblioteca_completa()
+# --- CARGAR CATÁLOGO OPTIMIZADO ---
+with st.spinner("Cargando la colección exclusiva..."):
+    catalogo = extraer_catalogo_optimizado()
 
 if catalogo:
     col_catalogo, col_carrito = st.columns([3, 1])
     
     with col_catalogo:
-        # Búsqueda intuitiva y rápida al instante
-        busqueda = st.text_input("🔍 Búsqueda intuitiva (escribe cualquier letra o marca):", placeholder="Ej. Jean, Prada, Orientica, Bleu...")
+        # Búsqueda intuitiva en tiempo real
+        busqueda = st.text_input("🔍 Búsqueda intuitiva (escribe cualquier letra o marca):", placeholder="Ej. Jean, Prada, Orientica...")
         
         if busqueda:
             catalogo_filtrado = [p for p in catalogo if busqueda.lower() in p['Nombre'].lower()]
@@ -171,7 +162,7 @@ if catalogo:
                     prod = catalogo_filtrado[i + j]
                     with row_cols[j]:
                         with st.container(border=True):
-                            # Mostrar imagen de alta calidad optimizada
+                            # Mostrar imagen limpia y de alta calidad
                             try:
                                 st.image(prod['Imagen_URL'], use_column_width=True)
                             except:
