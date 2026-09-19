@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import re
-import urllib.parse
 
 # Configuración de la página web de la app
 st.set_page_config(page_title="Dolchē - Perfumería Fina & Exclusiva", page_icon="✨", layout="wide")
@@ -50,9 +49,10 @@ st.markdown("""
     }
     .perfume-title {
         color: #2b221e;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         font-weight: 600;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+        min-height: 50px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -60,76 +60,68 @@ st.markdown("""
 URL_PRINCIPAL = "https://gpmcallen.com/"
 
 @st.cache_data(ttl=7200)
-def extraer_nombres_y_precios(tasa_multiplicador=36.0):
+def extraer_catalogo_por_categorias(tasa_multiplicador=36.0):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     }
     
-    productos = []
+    # URLs específicas de categorías en gpmcallen basadas en su estructura de menú
+    endpoints = {
+        "Dama": ["", "collections/ladies-perfumes", "collections/womens-perfumes"],
+        "Caballero": ["collections/mens-colognes", "collections/mens-perfumes"],
+        "Conjuntos": ["collections/ladies-sets", "collections/mens-sets", "collections/gift-sets"],
+        "Kids": ["collections/kids-perfumes"]
+    }
     
-    try:
-        response = requests.get(URL_PRINCIPAL, headers=headers, timeout=15)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            
-            # Buscar elementos contenedores de productos
-            items = soup.find_all(['div', 'li', 'article'], class_=lambda x: x and any(c in x for c in ['product', 'item', 'grid', 'card', 'col']))
-            
-            for item in items:
-                # Extraer nombre completo
-                nombre_tag = item.find(['h2', 'h3', 'a', 'span'], class_=lambda x: x and ('title' in x or 'name' in x))
-                if not nombre_tag:
-                    nombre_tag = item.find('a')
-                nombre = nombre_tag.text.strip() if nombre_tag else ""
-                
-                if not nombre or len(nombre) < 3:
-                    continue
-
-                # Filtro estricto para descartar cremas, geles o cosméticos ajenos a perfumes
-                n_lower = nombre.lower()
-                palabras_prohibidas = ['cream', 'lotion', 'gel', 'makeup', 'body wash', 'lipstick', 'skincare', 'suero', 'bioglow', 'cleaner']
-                if any(p in n_lower for p in palabras_prohibidas):
-                    continue
-
-                # Extraer precio del proveedor en USD
-                precio_tag = item.find(['span', 'div', 'p'], class_=lambda x: x and ('price' in x or 'amount' in x))
-                precio_proveedor = 0.0
-                
-                if precio_tag:
-                    precio_str = precio_tag.text.replace('$', '').replace('USD', '').replace(',', '').strip()
-                    numeros = re.findall(r'\d+\.\d+|\d+', precio_str)
-                    if numeros:
-                        precio_proveedor = float(numeros[0])
-                
-                if precio_proveedor > 0:
-                    precio_final = precio_proveedor * tasa_multiplicador
+    catalogo_general = []
+    
+    for categoria, rutas in endpoints.items():
+        for ruta in rutas:
+            url_target = URL_PRINCIPAL.rstrip('/') + '/' + ruta if ruta else URL_PRINCIPAL
+            try:
+                response = requests.get(url_target, headers=headers, timeout=10)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    items = soup.find_all(['div', 'li', 'article'], class_=lambda x: x and any(c in x for c in ['product', 'item', 'grid', 'card', 'col']))
                     
-                    # Clasificación inteligente por categorías
-                    if 'set' in n_lower or 'conjunto' in n_lower or 'gift' in n_lower or 'coffret' in n_lower:
-                        categoria = "Conjunto"
-                    elif 'kid' in n_lower or 'child' in n_lower or 'baby' in n_lower or 'niño' in n_lower or 'niña' in n_lower:
-                        categoria = "Kids"
-                    elif 'men' in n_lower or 'pour homme' in n_lower or 'caballero' in n_lower or 'for him' in n_lower:
-                        categoria = "Caballero"
-                    else:
-                        categoria = "Dama"
+                    for item in items:
+                        nombre_tag = item.find(['h2', 'h3', 'a', 'span'], class_=lambda x: x and ('title' in x or 'name' in x))
+                        if not nombre_tag:
+                            nombre_tag = item.find('a')
+                        nombre = nombre_tag.text.strip() if nombre_tag else ""
+                        
+                        if not nombre or len(nombre) < 3:
+                            continue
+                        
+                        # Filtro anti-basura / anti-cremas
+                        n_lower = nombre.lower()
+                        if any(p in n_lower for p in ['cream', 'lotion', 'gel', 'makeup', 'body wash', 'lipstick', 'skincare', 'suero', 'bioglow', 'cleaner', 'latest products']):
+                            continue
 
-                    prod_dict = {
-                        "Nombre": nombre,
-                        "Precio Venta MXN": round(precio_final, 2),
-                        "Categoria": categoria
-                    }
-                    
-                    if prod_dict not in productos:
-                        productos.append(prod_dict)
-    except:
-        pass
-        
-    return productos
-
-# --- INICIALIZAR CARRITO ---
-if 'carrito' not in st.session_state:
-    st.session_state.carrito = []
+                        precio_tag = item.find(['span', 'div', 'p'], class_=lambda x: x and ('price' in x or 'amount' in x))
+                        precio_proveedor = 0.0
+                        
+                        if precio_tag:
+                            precio_str = precio_tag.text.replace('$', '').replace('USD', '').replace(',', '').strip()
+                            numeros = re.findall(r'\d+\.\d+|\d+', precio_str)
+                            if numeros:
+                                precio_proveedor = float(numeros[0])
+                        
+                        if precio_proveedor > 0:
+                            precio_final = precio_proveedor * tasa_multiplicador
+                            
+                            prod_dict = {
+                                "Nombre": nombre,
+                                "Precio Venta MXN": round(precio_final, 2),
+                                "Categoria": categoria
+                            }
+                            
+                            if prod_dict not in catalogo_general:
+                                catalogo_general.append(prod_dict)
+            except:
+                continue
+                
+    return catalogo_general
 
 # --- ENCABEZADO DE LA APP ---
 st.title("✨ Dolchē — Perfumería Fina & Exclusiva")
@@ -143,9 +135,9 @@ with col_sup1:
 
 st.divider()
 
-# --- CARGAR BIBLIOTECA DE NOMBRES ---
-with st.spinner("Sincronizando nombres y precios de la biblioteca..."):
-    catalogo = extraer_nombres_y_precios()
+# --- CARGAR CATÁLOGO ---
+with st.spinner("Sincronizando categorías y precios oficiales..."):
+    catalogo = extraer_catalogo_por_categorias()
 
 if catalogo:
     cat_dama = [p for p in catalogo if p['Categoria'] == 'Dama']
@@ -160,19 +152,19 @@ if catalogo:
         f"🧸 Kids ({len(cat_kids)})"
     ])
 
-    def renderizar_grid_textos(productos_lista, tab_name):
-        busqueda = st.text_input(f"🔍 Buscar en {tab_name}:", placeholder="Escribe el nombre exacto o marca...", key=f"search_{tab_name}")
+    def renderizar_pestana(productos_lista, tab_name):
+        busqueda = st.text_input(f"🔍 Búsqueda intuitiva en {tab_name}:", placeholder="Escribe cualquier parte del nombre o marca...", key=f"search_{tab_name}")
         
         if busqueda:
             filtrados = [p for p in productos_lista if busqueda.lower() in p['Nombre'].lower()]
         else:
             filtrados = productos_lista
 
-        st.markdown(f"<p style='color: #7a6e65;'>Mostrando <b>{len(filtrados)}</b> fragancias disponibles</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color: #7a6e65;'>Mostrando <b>{len(filtrados)}</b> fragancias</p>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
         if not filtrados:
-            st.info("No hay productos que coincidan con la búsqueda.")
+            st.info("No hay productos que coincidan con la búsqueda en esta categoría.")
             return
 
         cols_per_row = 3
@@ -186,63 +178,14 @@ if catalogo:
                             st.markdown("✨ **Dolchē Fina**")
                             st.markdown(f"<div class='perfume-title'>{prod['Nombre']}</div>", unsafe_allow_html=True)
                             st.markdown(f"<span class='price-tag'>${prod['Precio Venta MXN']:,.2f} MXN</span>", unsafe_allow_html=True)
-                            st.markdown("<br>", unsafe_allow_html=True)
-                            
-                            if st.button("🛒 Agregar al Carrito", key=f"add_{tab_name}_{i+j}"):
-                                st.session_state.carrito.append(prod)
-                                st.toast(f"¡Agregado: {prod['Nombre']}!", icon="✨")
 
     with tab_dama:
-        renderizar_grid_textos(cat_dama, "Dama")
+        renderizar_pestana(cat_dama, "Dama")
     with tab_caballero:
-        renderizar_grid_textos(cat_caballero, "Caballero")
+        renderizar_pestana(cat_caballero, "Caballero")
     with tab_conjunto:
-        renderizar_grid_textos(cat_conjunto, "Conjunto")
+        renderizar_pestana(cat_conjunto, "Conjunto")
     with tab_kids:
-        renderizar_grid_textos(cat_kids, "Kids")
-
-    # --- SECCIÓN DEL CARRITO ---
-    st.divider()
-    st.markdown("### 🛍️ Tu Carrito de Compras")
-    if not st.session_state.carrito:
-        st.info("Tu carrito está vacío.")
-    else:
-        total_carrito = 0
-        for idx, item in enumerate(st.session_state.carrito):
-            col_c1, col_c2, col_c3 = st.columns([3, 2, 1])
-            with col_c1:
-                st.markdown(f"**{item['Nombre']}**")
-            with col_c2:
-                st.markdown(f"<span class='price-tag'>${item['Precio Venta MXN']:,.2f} MXN</span>", unsafe_allow_html=True)
-            with col_c3:
-                if st.button("❌ Quitar", key=f"del_{idx}"):
-                    st.session_state.carrito.pop(idx)
-                    st.rerun()
-            st.divider()
-            total_carrito += item['Precio Venta MXN']
-        
-        st.markdown(f"### Total General: ${total_carrito:,.2f} MXN")
-        
-        NUMERO_WHATSAPP = "5218448939820"  # Reemplaza con tu número real
-        
-        mensaje = "Hola Dolchē, quiero solicitar el siguiente pedido:\n\n"
-        for item in st.session_state.carrito:
-            mensaje += f"- {item['Nombre']} (${item['Precio Venta MXN']:,.2f} MXN)\n"
-        mensaje += f"\n*Total a pagar: ${total_carrito:,.2f} MXN*"
-        
-        mensaje_codificado = urllib.parse.quote(mensaje)
-        url_whatsapp = f"https://wa.me/{NUMERO_WHATSAPP}?text={mensaje_codificado}"
-        
-        st.markdown(f"""
-            <a href="{url_whatsapp}" target="_blank">
-                <button style="width: 100%; background-color: #25d366; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; font-size: 1.1rem;">
-                    💬 Solicitar Pedido por WhatsApp
-                </button>
-            </a>
-        """, unsafe_allow_html=True)
-        
-        if st.button("🗑️ Vaciar Carrito"):
-            st.session_state.carrito = []
-            st.rerun()
+        renderizar_pestana(cat_kids, "Kids")
 else:
     st.info("No se pudieron cargar productos en este momento. Intenta dar clic en 'Actualizar Catálogo'.")
