@@ -93,11 +93,9 @@ def extraer_catalogo_optimizado(tasa_multiplicador=36.0):
                 if precio_proveedor > 0:
                     precio_final = precio_proveedor * tasa_multiplicador
                     
-                    # Imagen estable y de alta calidad garantizada para evitar errores de carga
-                    # Usamos un catálogo visual elegante de frascos de perfume profesionales
+                    # Imagen estable y de alta calidad garantizada
                     imagen_segura = "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=400&fit=crop"
                     
-                    # Si el nombre menciona marcas específicas, adaptamos una foto fina alusiva
                     n_lower = nombre.lower()
                     if 'jean paul' in n_lower:
                         imagen_segura = "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=400&fit=crop"
@@ -162,9 +160,9 @@ if catalogo:
                     prod = catalogo_filtrado[i + j]
                     with row_cols[j]:
                         with st.container(border=True):
-                            # Mostrar imagen limpia y de alta calidad
+                            # Corrección aplicada: se usa use_container_width=True para renderizar la imagen correctamente
                             try:
-                                st.image(prod['Imagen_URL'], use_column_width=True)
+                                st.image(prod['Imagen_URL'], use_container_width=True)
                             except:
                                 st.markdown("✨ *(Dolchē Fina)*")
                             
