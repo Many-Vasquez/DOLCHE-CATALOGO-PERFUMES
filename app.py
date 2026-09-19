@@ -44,7 +44,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS MAESTRA (Preparada para mapeo masivo y rutas de imágenes) ---
+# --- BASE DE DATOS MAESTRA (Ampliación progresiva del catálogo) ---
 CATALOGO_MAESTRO_GPM = [
     # Sección Dama
     {"Nombre": "212 Heroes For Her .34oz Mini Edp By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
@@ -84,6 +84,10 @@ CATALOGO_MAESTRO_GPM = [
     {"Nombre": "Viktor & Rolf Flowerbomb 3.4oz Eau de Parfum", "Precio Venta MXN": 3058.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"},
     {"Nombre": "Very Good Girl .24oz Mini Edp By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
     {"Nombre": "Yves Saint Laurent Libre 3.0oz Eau de Parfum", "Precio Venta MXN": 2988.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
+    # Nuevos agregados en Dama
+    {"Nombre": "Gucci Bloom 3.3oz Eau de Parfum", "Precio Venta MXN": 2518.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
+    {"Nombre": "Carolina Herrera Very Good Girl 2.7oz Edp", "Precio Venta MXN": 2698.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80"},
+    {"Nombre": "Marc Jacobs Daisy Eau So Fresh 4.2oz Edt", "Precio Venta MXN": 2338.20, "Seccion": "Dama", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
 
     # Sección Caballero
     {"Nombre": "212 Men .34oz Mini Edt By Carolina Herrera", "Precio Venta MXN": 826.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
@@ -112,6 +116,9 @@ CATALOGO_MAESTRO_GPM = [
     {"Nombre": "Versace Dylan Blue 3.4oz Edt", "Precio Venta MXN": 1798.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80"},
     {"Nombre": "Versace Eros 3.4oz Eau de Toilette", "Precio Venta MXN": 1978.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=400&q=80"},
     {"Nombre": "Yves Saint Laurent Y Edp 3.4oz", "Precio Venta MXN": 2878.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1543422967-8854067965fa?auto=format&fit=crop&w=400&q=80"},
+    # Nuevos agregados en Caballero
+    {"Nombre": "Acqua Di Gio Giorgio Armani 4.2oz Edt", "Precio Venta MXN": 2338.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80"},
+    {"Nombre": "Bleu de Chanel 3.4oz Eau de Toilette", "Precio Venta MXN": 2988.20, "Seccion": "Caballero", "Imagen": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80"},
 
     # Sección Kids
     {"Nombre": "Disney Frozen II Eau de Toilette Set for Kids", "Precio Venta MXN": 650.00, "Seccion": "Kids", "Imagen": "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=400&q=80"},
