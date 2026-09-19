@@ -5,51 +5,58 @@ import pandas as pd
 import re
 
 # Configuración de la página web de la app
-st.set_page_config(page_title="Dolchē - Perfumería Fina", page_icon="✨", layout="wide")
+st.set_page_config(page_title="Dolchē - Perfumería Fina & Exclusiva", page_icon="✨", layout="wide")
 
-# --- ESTILOS CSS PERSONALIZADOS (Estética de Perfumería) ---
+# --- ESTILOS CSS PERSONALIZADOS (Boutique de Lujo) ---
 st.markdown("""
     <style>
-    .main {
-        background-color: #faf8f5;
+    /* Fondo general estilo boutique / perfumería fina */
+    .stApp {
+        background: linear-gradient(135deg, #fbf9f6 0%, #f4efe6 100%);
     }
-    h1 {
-        color: #2c221e;
-        font-family: 'Helvetica Neue', sans-serif;
-        font-weight: 700;
-        letter-spacing: -1px;
+    h1, h2, h3 {
+        color: #2b221e;
+        font-family: 'Playfair Display', serif, sans-serif;
     }
     .stButton>button {
-        background: linear-gradient(135deg, #2c221e 0%, #4a3b32 100%);
-        color: white;
+        background: linear-gradient(135deg, #2b221e 0%, #4a3b32 100%);
+        color: #f4efe6;
         border-radius: 8px;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1.2rem;
         border: none;
         font-weight: 600;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 10px rgba(43,34,30,0.15);
     }
     .stButton>button:hover {
-        background: linear-gradient(135deg, #bfa15f 0%, #d4b87a 100%);
+        background: linear-gradient(135deg, #b89753 0%, #d4b87a 100%);
         color: #1a1a1a;
     }
-    div.product-card {
+    /* Estilo elegante para el buscador */
+    div[data-baseweb="input"] {
+        border-radius: 8px;
+        border-color: #d4b87a !important;
         background-color: #ffffff;
-        padding: 20px;
+    }
+    /* Tarjetas de productos limpias y con sombra suave */
+    div.stContainer {
+        background-color: #ffffff;
         border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid #f0e6dc;
-        text-align: center;
-        margin-bottom: 20px;
-        height: 100%;
+        border: 1px solid #eae2d6 !important;
+        box-shadow: 0 6px 20px rgba(43,34,30,0.04);
+        padding: 15px;
     }
     .price-tag {
-        color: #bfa15f;
-        font-size: 1.2rem;
-        font-weight: bold;
+        color: #9c7c38;
+        font-size: 1.3rem;
+        font-weight: 700;
+        font-family: 'Helvetica Neue', sans-serif;
     }
-    .cost-tag {
-        color: #8c827b;
-        font-size: 0.9rem;
+    .brand-subtitle {
+        color: #7a6e65;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -116,7 +123,6 @@ def extraer_catalogo_dolche(tasa_multiplicador=36.0):
                 prod_dict = {
                     "Imagen_URL": imagen,
                     "Nombre": nombre,
-                    "Costo USD": round(precio_proveedor, 2),
                     "Precio Venta MXN": round(precio_final, 2)
                 }
                 if prod_dict not in productos:
@@ -126,34 +132,37 @@ def extraer_catalogo_dolche(tasa_multiplicador=36.0):
     except Exception as e:
         return []
 
-# --- ENCABEZADO DE LA APP ---
+# --- ENCABEZADO DE LA APP PARA CLIENTES ---
 st.title("✨ Dolchē — Perfumería Fina & Exclusiva")
-st.markdown("Catálogo en tiempo real sincronizado con el proveedor. Conversión aplicada con factor directo **x36**.")
+st.markdown("<p class='brand-subtitle'>Catálogo de fragancias importadas de alta gama</p>", unsafe_allow_html=True)
 
-# Barra superior de acciones
-col_btn1, col_btn2 = st.columns([1, 4])
+# Botón discreto de sincronización en la barra lateral o superior
+col_btn1, col_btn2 = st.columns([1, 5])
 with col_btn1:
-    if st.button("🔄 Sincronizar Catálogo"):
+    if st.button("🔄 Actualizar"):
         st.cache_data.clear()
         st.rerun()
 
 st.divider()
 
-with st.spinner("Preparando esencias y calculando precios exclusivos..."):
+with st.spinner("Cargando nuestra colección exclusiva..."):
     catalogo = extraer_catalogo_dolche()
 
 if catalogo:
-    busqueda = st.text_input("🔍 Buscar fragancia por nombre o marca:")
+    # Buscador intuitivo con respuesta al instante
+    busqueda = st.text_input("🔍 Buscar fragancia (escribe el nombre, marca o notas...):", placeholder="Ej. Jean Paul, Prada, Orientica...")
     
+    # Filtrado inteligente
     if busqueda:
+        # Filtra si encuentra coincidencia sin importar mayúsculas/minúsculas
         catalogo_filtrado = [p for p in catalogo if busqueda.lower() in p['Nombre'].lower()]
     else:
         catalogo_filtrado = catalogo
 
-    st.markdown(f"**Fragancias disponibles:** `{len(catalogo_filtrado)}`")
+    st.markdown(f"<p style='color: #7a6e65;'>Mostrando <b>{len(catalogo_filtrado)}</b> fragancias disponibles</p>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Mostrar en formato de cuadrícula (Grid de 3 columnas)
+    # Mostrar en cuadrícula elegante de 3 columnas
     cols_per_row = 3
     for i in range(0, len(catalogo_filtrado), cols_per_row):
         row_cols = st.columns(cols_per_row)
@@ -166,12 +175,12 @@ if catalogo:
                             try:
                                 st.image(prod['Imagen_URL'], use_column_width=True)
                             except:
-                                st.markdown("*(Imagen no disponible)*")
+                                st.markdown("✨ *(Dolchē)*")
                         else:
                             st.markdown("✨ *(Dolchē)*")
                         
                         st.markdown(f"**{prod['Nombre']}**")
-                        st.markdown(f"<span class='cost-tag'>Costo Proveedor: ${prod['Costo USD']} USD</span>", unsafe_allow_html=True)
-                        st.markdown(f"<span class='price-tag'>Precio Venta: ${prod['Precio Venta MXN']} MXN</span>", unsafe_allow_html=True)
+                        st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+                        st.markdown(f"<span class='price-tag'>${prod['Precio Venta MXN']:,.2f} MXN</span>", unsafe_allow_html=True)
 else:
-    st.info("No se pudieron cargar productos en este momento. Intenta sincronizar de nuevo.")
+    st.info("El catálogo se está actualizando. Por favor, dale clic al botón 'Actualizar' superior.")
